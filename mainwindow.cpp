@@ -40,49 +40,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-#if 0 // 加速版本
-
-void MainWindow::updateCamera()
-{
-    Mat srcImage;
-    if (m_cap.grab()) {
-        m_cap.retrieve(srcImage);
-    }
-    if (srcImage.empty()) return;
-
-           // 1. 水平翻转图像
-    cv::flip(srcImage, srcImage, 1);
-
-           // 2. 灰度转换（但不每帧都检测人脸）
-    Mat grayImage;
-    cvtColor(srcImage, grayImage, COLOR_BGR2GRAY);
-
-           // 3. 每 5 帧检测一次人脸
-    static int frameCount = 0;
-    frameCount++;
-    static std::vector<Rect> faceRects; // 存储最近一次检测到的人脸
-    if (frameCount % 3 == 0)
-    {
-        m_cascade.detectMultiScale(grayImage, faceRects, 1.1, 3, 0, cv::Size(50, 50));
-    }
-            // 4. 显示矩形框
-    if (faceRects.size() > 0)
-    {
-        Rect rect = faceRects.at(0); // 第一个人脸的矩形框
-        rectangle(srcImage, rect, Scalar(0,0,255, 2));
-
-               // 移动人脸框
-        // QRect rectTest(10, 10, 10, 10);
-        ui->circle->move(rect.x, rect.y);
-    }
-
-           // 5. 转换格式并显示
-    cv::cvtColor(srcImage, srcImage, cv::COLOR_BGR2RGB);
-    QImage image(srcImage.data, srcImage.cols, srcImage.rows, srcImage.step, QImage::Format_RGB888);
-    ui->camera->setPixmap(QPixmap::fromImage(image).scaled(ui->camera->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-}
-
-#elif 1 // 人脸局中显示并填充整个QLabel
 void MainWindow::updateCamera()
 {
     // 1. 采集数据
@@ -114,8 +71,6 @@ void MainWindow::updateCamera()
         ui->camera->setPixmap(pix.scaled(ui->camera->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
     }
 }
-
-#endif
 
 
 void MainWindow::faceFrame(Mat &srcImage)
